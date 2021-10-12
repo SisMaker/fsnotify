@@ -51,11 +51,12 @@ func NewWatcher() (*Watcher, error) {
 	}
 	go w.readEvents()
 	return w, nil
+}
+	
 func (w *Watcher) SetBufferSize(bufSize int) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	w.bufSize = bufSize
-}
 }
 
 // Close removes all watches and closes the events channel.
@@ -364,7 +365,7 @@ func (w *Watcher) startRead(watch *watch) error {
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&watch.buf))
 
 	e := syscall.ReadDirectoryChanges(watch.ino.handle, (*byte)(unsafe.Pointer(hdr.Data)),
-		uint32(hdr.Len), w.recursive, mask, nil, &watch.ov, 0)
+		uint32(hdr.Len), false, mask, nil, &watch.ov, 0)
 	if e != nil {
 		err := os.NewSyscallError("ReadDirectoryChanges", e)
 		if e == syscall.ERROR_ACCESS_DENIED && watch.mask&provisional == 0 {
